@@ -25,22 +25,25 @@
     html, body { margin: 0; background: #2A0509; }
 
     /* ---------- install sheet (shown until the app is installed) ---------- */
+    /* Centered install dialog over a dimmed backdrop. */
     #install {
-      box-sizing: border-box; width: 100vw; overflow: hidden;
+      box-sizing: border-box; overflow-y: auto;
       position: fixed; inset: 0; z-index: 10000; display: none;
-      align-items: flex-end; justify-content: center;
-      background: rgba(20, 2, 5, .55);
+      align-items: center; justify-content: center;
+      padding: 20px 16px;
+      background: rgba(20, 2, 5, .62);
+      backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
       font-family: -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
     }
     #install.show { display: flex; }
     .sheet {
-      width: 100%; max-width: min(460px, 100vw); box-sizing: border-box;
-      padding: 22px 22px calc(22px + env(safe-area-inset-bottom, 0px));
+      width: 100%; max-width: 400px; box-sizing: border-box; margin: auto;
+      padding: 24px 22px 14px;
       background: #F7F1EB; color: #231417;
-      border-radius: 22px 22px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,.35);
-      animation: up .35s ease-out;
+      border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,.45);
+      animation: pop .3s ease-out;
     }
-    @keyframes up { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+    @keyframes pop { from { transform: scale(.94); opacity: 0; } to { transform: none; opacity: 1; } }
     @media (prefers-reduced-motion: reduce) { .sheet { animation: none; } }
     .head { display: flex; gap: 14px; align-items: center; }
     .head img { width: 62px; height: 62px; border-radius: 15px; box-shadow: 0 4px 12px rgba(42,5,9,.35); }
