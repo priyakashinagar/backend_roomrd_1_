@@ -158,7 +158,17 @@ function auth(req, res, next) {
 
 // ---------------------------------------------------------------- routes
 
-app.get('/', (_req, res) => res.json({ app: 'ROOMRD API', status: 'ok' }));
+// Health check: also says which storage is active (never the connection string).
+app.get('/', (_req, res) =>
+  res.json({
+    app: 'ROOMRD API',
+    status: 'ok',
+    version: 2,
+    storage: DB.mongo() ? 'mongodb' : 'file',
+    mongodbUriSet: !!process.env.MONGODB_URI,
+    users: db().users.length,
+  }),
+);
 
 app.get('/api/meta', (_req, res) => res.json(OPTIONS));
 
