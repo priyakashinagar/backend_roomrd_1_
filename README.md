@@ -83,3 +83,22 @@ All routes except `auth/login`, `meta` and `places` need `Authorization: Bearer 
 | DELETE | /api/matches/:id | unmatch |
 | GET / POST | /api/matches/:id/messages | read / send chat (`{text}`) |
 | POST | /api/reset | reset swipes/matches/chats, regenerate dummy profiles |
+
+## Web app + install link
+
+`public/app/` holds the Flutter **web build** of ROOMRD plus the Android APKs, served at **`/app/`**
+(the bare `/` redirects browsers there; tools still get the JSON health check).
+
+- Every visit in a browser shows an **Install ROOMRD** sheet until the app is installed:
+  Android Chrome → one-tap install (PWA) + APK download; iPhone Safari → "Share → Add to Home Screen" steps.
+- `roomrd.apk` = arm64 (most phones), `roomrd-32bit.apk` = older 32-bit phones.
+
+Update it after changing the app:
+
+```powershell
+cd roomrd_app
+flutter build web --release --base-href /app/
+flutter build apk --release --split-per-abi
+# copy build\web\* (without canvaskit) to roomrd_backend\public\app\
+# copy app-arm64-v8a-release.apk -> public\app\roomrd.apk, app-armeabi-v7a-release.apk -> public\app\roomrd-32bit.apk
+```

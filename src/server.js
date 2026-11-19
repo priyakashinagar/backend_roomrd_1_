@@ -158,17 +158,34 @@ function auth(req, res, next) {
 
 // ---------------------------------------------------------------- routes
 
-// Health check: also says which storage is active (never the connection string).
-app.get('/', (_req, res) =>
+// Web app (Flutter web build + install prompt + Android APKs) at /app/.
+const WEB = path.join(__dirname, '..', 'public', 'app');
+app.use(
+  '/app',
+  express.static(WEB, {
+    setHeaders: (res, file) => {
+      if (file.endsWith('.apk')) {
+        res.set('Content-Type', 'application/vnd.android.package-archive');
+        res.set('Content-Disposition', `attachment; filename="${path.basename(file) === 'roomrd.apk' ? 'ROOMRD.apk' : 'ROOMRD-32bit.apk'}"`);
+      } else if (/(index\.html|sw\.js|manifest\.json|flutter_bootstrap\.js|version\.json)$/.test(file)) {
+        res.set('Cache-Control', 'no-cache'); // always pick up a new release
+      }
+    },
+  }),
+);
+
+// Health check for tools (JSON); browsers opening the bare link go to the app.
+app.get('/', (req, res) => {
+  if (req.accepts(['json', 'html']) === 'html') return res.redirect('/app/');
   res.json({
     app: 'ROOMRD API',
     status: 'ok',
-    version: 2,
+    version: 3,
     storage: DB.mongo() ? 'mongodb' : 'file',
     mongodbUriSet: !!process.env.MONGODB_URI,
     users: db().users.length,
-  }),
-);
+  });
+});
 
 app.get('/api/meta', (_req, res) => res.json(OPTIONS));
 
