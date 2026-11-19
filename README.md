@@ -11,9 +11,35 @@ npm run dev      # http://localhost:3000, auto-reload
 npm start
 ```
 
-- Data is stored in `data/db.json` (created on first run, git-ignored). Delete it to start fresh.
-- Uploaded photos go to `uploads/` (git-ignored) and are served at `/uploads/...`.
-- `PORT` env var changes the port (default `3000`).
+## Storage
+
+| `MONGODB_URI` set? | Data (users, likes, chats) | Photos |
+|---|---|---|
+| Yes (production) | MongoDB, collection `state` | MongoDB GridFS bucket `uploads` |
+| No (local dev) | `data/db.json` | `uploads/` folder |
+
+Both are served at `/uploads/<name>`, so the app does not care which one is used.
+
+### Environment variables
+
+| Name | Default | |
+|---|---|---|
+| `MONGODB_URI` | _(empty)_ | e.g. `mongodb+srv://user:pass@cluster0.xxxx.mongodb.net/?retryWrites=true&w=majority` |
+| `MONGODB_DB` | `roomrd` | database name |
+| `PORT` | `3000` | |
+
+### MongoDB Atlas + Render setup
+
+1. Create a free **M0** cluster on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas).
+2. **Database Access** → add a database user (username + password).
+3. **Network Access** → allow `0.0.0.0/0` (Render's outbound IPs change).
+4. **Connect → Drivers** → copy the `mongodb+srv://...` string and put the password in it.
+5. On Render → your service → **Environment** → add `MONGODB_URI` with that string → save (it redeploys).
+6. Render logs should show `Storage: MongoDB (...)`. If the URI is wrong the server stops with
+   `Could not load the database: ...`.
+
+Without `MONGODB_URI` on Render, data lives on Render's temporary disk and is lost on every
+redeploy/restart.
 
 ## What it does
 

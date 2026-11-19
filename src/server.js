@@ -18,9 +18,19 @@ app.use(express.json({ limit: '1mb' }));
 const PORT = process.env.PORT || 3000;
 const UPLOADS = path.join(__dirname, '..', 'uploads');
 fs.mkdirSync(UPLOADS, { recursive: true });
+
+// Photos: served from MongoDB GridFS when connected, else from the uploads folder.
+app.get('/uploads/:name', async (req, res, next) => {
+  const m = DB.mongo();
+  if (!m) return next();
+  const file = await m.bucket.find({ filename: req.params.name }).next();
+  if (!file) return res.status(404).end();
+  res.set('Content-Type', (file.metadata && file.metadata.contentType) || 'image/jpeg');
+  res.set('Cache-Control', 'public, max-age=31536000, immutable');
+  m.bucket.openDownloadStreamByName(req.params.name).on('error', () => res.status(404).end()).pipe(res);
+});
 app.use('/uploads', express.static(UPLOADS));
 
-DB.load();
 const db = () => DB.get();
 
 const newId = (p) => `${p}_${crypto.randomBytes(6).toString('hex')}`;
@@ -198,17 +208,31 @@ app.put('/api/me', auth, (req, res) => {
 });
 
 const upload = multer({
-  storage: multer.diskStorage({
-    destination: UPLOADS,
-    filename: (_req, file, cb) => cb(null, `${newId('img')}${path.extname(file.originalname || '.jpg') || '.jpg'}`),
-  }),
+  storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => cb(null, /^image\//.test(file.mimetype) || /\.(jpe?g|png|webp|heic)$/i.test(file.originalname)),
 });
 
-app.post('/api/upload', auth, upload.single('photo'), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'No image uploaded' });
-  res.status(201).json({ url: `/uploads/${req.file.filename}` });
+app.post('/api/upload', auth, upload.single('photo'), async (req, res, next) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No image uploaded' });
+    const name = `${newId('img')}${path.extname(req.file.originalname || '') || '.jpg'}`;
+    const m = DB.mongo();
+    if (m) {
+      await new Promise((resolve, reject) =>
+        m.bucket
+          .openUploadStream(name, { metadata: { contentType: req.file.mimetype, owner: req.user.id } })
+          .on('finish', resolve)
+          .on('error', reject)
+          .end(req.file.buffer),
+      );
+    } else {
+      fs.writeFileSync(path.join(UPLOADS, name), req.file.buffer);
+    }
+    res.status(201).json({ url: `/uploads/${name}` });
+  } catch (e) {
+    next(e);
+  }
 });
 
 // Higher compatibility first, nearby people nudged up.
@@ -389,6 +413,13 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: err.message || 'Server error' });
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`ROOMRD API running on http://localhost:${PORT}`);
-});
+DB.load()
+  .then(() => {
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`ROOMRD API running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((e) => {
+    console.error('Could not load the database:', e.message);
+    process.exit(1);
+  });
