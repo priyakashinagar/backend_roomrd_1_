@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Replaced by `flutter build web --base-href /app/`. -->
+  <base href="/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="ROOMRD - find a flatmate you will actually enjoy living with.">
+  <meta name="theme-color" content="#2A0509">
+
+  <!-- iOS: home-screen app -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ROOMRD">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <title>ROOMRD</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    html, body { margin: 0; background: #2A0509; }
+
+    /* ---------- install sheet (shown until the app is installed) ---------- */
+    /* Centered install dialog over a dimmed backdrop. */
+    #install {
+      box-sizing: border-box; overflow-y: auto;
+      position: fixed; inset: 0; z-index: 10000; display: none;
+      align-items: center; justify-content: center;
+      padding: 20px 16px;
+      background: rgba(20, 2, 5, .62);
+      backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+      font-family: -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
+    }
+    #install.show { display: flex; }
+    .sheet {
+      width: 100%; max-width: 400px; box-sizing: border-box; margin: auto;
+      padding: 24px 22px 14px;
+      background: #F7F1EB; color: #231417;
+      border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,.45);
+      animation: pop .3s ease-out;
+    }
+    @keyframes pop { from { transform: scale(.94); opacity: 0; } to { transform: none; opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) { .sheet { animation: none; } }
+    .head { display: flex; gap: 14px; align-items: center; }
+    .head img { width: 62px; height: 62px; border-radius: 15px; box-shadow: 0 4px 12px rgba(42,5,9,.35); }
+    .head h2 { margin: 0; font: 600 22px/1.15 Georgia, "Times New Roman", serif; letter-spacing: .5px; }
+    .head p { margin: 4px 0 0; color: #7A6A6C; font-size: 14px; }
+    .why { margin: 16px 0 4px; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; }
+    .why li::before { content: "✓"; color: #7A1424; font-weight: 700; margin-right: 8px; }
+    .btn {
+      display: block; width: 100%; margin-top: 14px; padding: 15px; border: 0; border-radius: 999px;
+      font: 700 16px system-ui, sans-serif; text-align: center; text-decoration: none; cursor: pointer;
+    }
+    .primary { background: #7A1424; color: #F5EDE3; }
+    .secondary { background: #fff; color: #7A1424; border: 1.5px solid #EBE0DA; }
+    .link { background: none; color: #7A6A6C; font-weight: 600; font-size: 14px; padding: 10px; margin-top: 6px; }
+    .steps { margin: 14px 0 0; padding: 14px 16px; background: #fff; border-radius: 14px; font-size: 15px; line-height: 1.5; }
+    .steps ol { margin: 0; padding-left: 20px; }
+    .steps li { margin: 4px 0; }
+    .ico { display: inline-block; vertical-align: -3px; width: 18px; height: 18px; }
+    .btn:focus-visible { outline: 3px solid #C23A4B; outline-offset: 2px; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <div id="install" role="dialog" aria-modal="true" aria-labelledby="install-title">
+    <div class="sheet">
+      <div class="head">
+        <img src="icons/Icon-192.png" alt="">
+        <div>
+          <h2 id="install-title">Install ROOMRD</h2>
+          <p>Get the app on your home screen</p>
+        </div>
+      </div>
+      <ul class="why">
+        <li>Opens full screen, like a normal app</li>
+        <li>One tap from your home screen</li>
+        <li>Free, no app store needed</li>
+      </ul>
+
+      <!-- Chrome / Edge / Samsung Internet: real install prompt -->
+      <button id="btn-install" class="btn primary" hidden>Install app</button>
+
+      <!-- iPhone / iPad (Safari): Apple only allows manual install -->
+      <div id="ios-steps" class="steps" hidden>
+        <ol>
+          <li>Tap the <b>Share</b> button
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Share icon"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M5 11v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9"/></svg>
+            in the browser bar</li>
+          <li>Scroll and tap <b>Add to Home Screen</b> ⊕</li>
+          <li>Tap <b>Add</b>, then open ROOMRD from your home screen</li>
+        </ol>
+      </div>
+
+      <!-- Android without the prompt (already installed, or another browser) -->
+      <div id="android-steps" class="steps" hidden>
+        <ol>
+          <li>Tap the browser menu <b>⋮</b></li>
+          <li>Tap <b>Install app</b> or <b>Add to Home screen</b></li>
+        </ol>
+        <div style="margin-top:8px;color:#7A6A6C;font-size:13px">Already installed? Open ROOMRD from your home screen.</div>
+      </div>
+
+      <a id="btn-apk" class="btn secondary" href="roomrd.apk" download hidden>Download Android app (APK)</a>
+      <a id="btn-apk32" class="btn link" href="roomrd-32bit.apk" download hidden style="margin-top:0">Older phone? Get the 32-bit APK</a>
+      <button id="btn-later" class="btn link">Continue in browser</button>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var ua = navigator.userAgent || '';
+      var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      var isAndroid = /Android/i.test(ua);
+      var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+      }
+      // Already running as the installed app: never ask.
+      if (standalone) return;
+
+      var sheet = document.getElementById('install');
+      var btnInstall = document.getElementById('btn-install');
+      var deferred = null;
+      function $(id) { return document.getElementById(id); }
+      function show() { sheet.classList.add('show'); }
+      function hide() { sheet.classList.remove('show'); }
+
+      window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        deferred = e;
+        btnInstall.hidden = false;
+        $('android-steps').hidden = true;
+        show();
+      });
+      window.addEventListener('appinstalled', hide);
+
+      btnInstall.addEventListener('click', function () {
+        if (!deferred) return;
+        deferred.prompt();
+        deferred.userChoice.then(function (r) { if (r.outcome === 'accepted') hide(); deferred = null; });
+      });
+      $('btn-later').addEventListener('click', hide);
+
+      // Ask on every visit until installed.
+      if (isIOS) {
+        $('ios-steps').hidden = false;
+        show();
+      } else if (isAndroid) {
+        $('btn-apk').hidden = false;
+        $('btn-apk32').hidden = false;
+        // Give Chrome a moment to fire beforeinstallprompt; otherwise show manual steps.
+        setTimeout(function () { if (!deferred) $('android-steps').hidden = false; show(); }, 2500);
+      }
+    })();
+  </script>
+
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
